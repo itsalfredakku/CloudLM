@@ -10,73 +10,69 @@ namespace CloudLM.Classes
 {
     internal class FireActions
     {
-        private static string FirebaseApiKey
-        {
-            get
-            {
-                if (ConfigurationManager.AppSettings["apiKey"] == null) throw new Exception("Firebase api key not found");
-                return ConfigurationManager.AppSettings["apiKey"];
-            }
-        }
-        private static FirebaseAuthProvider Provider
-        {
-            get
-            {
-                return new FirebaseAuthProvider(new FirebaseConfig(FirebaseApiKey));
-            }
-        }
-
-
-        private static FirebaseAuthLink authLink;
-
-
-        private static User _User = null;
-        public static User User
-        {
-            get
-            {
-                return _User;
-            }
-        }
-
-
-        private static string _AuthToken
-        {
-            set
-            {
-                System.IO.File.WriteAllText(".token", value);
-            }
-        }
-        public static string AuthToken
-        {
-            get
-            {
-                try
-                {
-                    return System.IO.File.ReadAllText(".token");
-                }
-                catch { return null; }
-            }
-        }
-
-
-        public static async Task Authenticate(string email, string password)
+        internal async static Task AuthFromSession()
         {
             try
             {
-                authLink = await Provider.SignInWithEmailAndPasswordAsync(email: email, password: password);
-                if (authLink == null) throw new Exception("Authentication failed");
-                _User = authLink.User;
-                _AuthToken = authLink.FirebaseToken;
+                if (FireObjects.AuthToken == null || FireObjects.RefreshToken == null)
+                {
+                    return;
+                }
+                FireObjects.AuthLink = new Firebase.Auth.FirebaseAuthLink(FireObjects.Provider, new Firebase.Auth.FirebaseAuth() { FirebaseToken = FireObjects.AuthToken, RefreshToken = FireObjects.RefreshToken });
+                try 
+                { 
+                    FireObjects.AuthLink = await FireObjects.AuthLink.GetFreshAuthAsync();
+                    await FireObjects.AuthLink.RefreshUserDetails();
+                }
+                catch { throw; }
+                FireObjects.User = FireObjects.AuthLink.User;
+                FireObjects.AuthToken = FireObjects.AuthLink.FirebaseToken;
+                FireObjects.RefreshToken = FireObjects.AuthLink.RefreshToken;
             }
             catch (Exception ex)
             {
-                string error = Classes.Utility.ApplyRegEx(@"Reason: [a-zA-Z]+", ex.Message);
-                if (String.IsNullOrEmpty(error)) throw new Exception(ex.Message);
+                FireObjects.AuthLink = null;
+
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
         }
-        public static async Task UpdateProfile(string displayName, string photoUrl)
+        internal async static Task AuthFromEmailAndPassword(string email, string password)
+        {
+            try
+            {
+                FireObjects.AuthLink = await FireObjects.Provider.SignInWithEmailAndPasswordAsync(email: email, password: password);
+                FireObjects.User = FireObjects.AuthLink.User;
+                FireObjects.AuthToken = FireObjects.AuthLink.FirebaseToken;
+                FireObjects.RefreshToken = FireObjects.AuthLink.RefreshToken;
+            }
+            catch (Exception ex)
+            {
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
+                throw new Exception(error);
+            }
+        }
+        internal async static Task<string> MachineId()
+        {
+            string machineId = (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/machineId")).ResultAs<string>();
+            if (String.IsNullOrWhiteSpace(machineId))
+            {
+                await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).SetAsync($"{FireObjects.User.LocalId}/machineId", Classes.Utility.GetHdds().First().SerialNo.Trim());
+            }
+            return machineId;
+        }
+        internal async static Task<string> ValidFrom()
+        {
+            return (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validFrom")).ResultAs<string>();
+        }
+        internal async static Task<string> ValidTill()
+        {
+            return (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validTill")).ResultAs<string>();
+        }
+
+        /*public static async Task UpdateProfile(string displayName, string photoUrl)
         {
             try
             {
@@ -84,8 +80,42 @@ namespace CloudLM.Classes
             }
             catch (Exception ex)
             {
-                string error = Classes.Utility.ApplyRegEx(@"Reason: [a-zA-Z]+", ex.Message);
-                if (String.IsNullOrEmpty(error)) throw new Exception(ex.Message);
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
+                throw new Exception(error);
+            }
+        }*/
+        public static async Task Validate()
+        {
+            try
+            {
+                try 
+                {
+                    string hdsn = await MachineId();
+                    DateTime validFrom = DateTime.ParseExact(await ValidFrom(), "yyyyMMdd", null);
+                    DateTime validTill = DateTime.ParseExact(await ValidTill(), "yyyyMMdd", null);
+
+
+
+                    foreach (HardDrive hardDrive in Classes.Utility.GetHdds())
+                    {
+                        if (hardDrive.SerialNo.Trim() == (await MachineId()).Trim())
+                        {
+                            if (DateTime.Now >= validFrom && DateTime.Now <= validTill)
+                                return;
+                        }
+                    }
+                }
+                catch
+                {
+                    throw new Exception("Please contact administration");
+                }
+                throw new Exception("Invalid machine");
+            }
+            catch (Exception ex)
+            {
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
         }
@@ -93,12 +123,12 @@ namespace CloudLM.Classes
         {
             try
             {
-                await Provider.SendPasswordResetEmailAsync(email);
+                await FireObjects.Provider.SendPasswordResetEmailAsync(email);
             }
             catch (Exception ex)
             {
-                string error = Classes.Utility.ApplyRegEx(@"Reason: [a-zA-Z]+", ex.Message);
-                if (String.IsNullOrEmpty(error)) throw new Exception(ex.Message);
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
         }
@@ -106,12 +136,12 @@ namespace CloudLM.Classes
         {
             try
             {
-                await Provider.SendEmailVerificationAsync(email);
+                await FireObjects.Provider.SendEmailVerificationAsync(email);
             }
             catch (Exception ex)
             {
-                string error = Classes.Utility.ApplyRegEx(@"Reason: [a-zA-Z]+", ex.Message);
-                if (String.IsNullOrEmpty(error)) throw new Exception(ex.Message);
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
         }
@@ -119,17 +149,14 @@ namespace CloudLM.Classes
         {
             try
             {
-                await Provider.ChangeUserPassword(AuthToken, newPassword);
+                await FireObjects.Provider.ChangeUserPassword(FireObjects.AuthToken, newPassword);
             }
             catch (Exception ex)
             {
-                string error = Classes.Utility.ApplyRegEx(@"Reason: [a-zA-Z]+", ex.Message);
-                if (String.IsNullOrEmpty(error)) throw new Exception(ex.Message);
+                string error = Classes.Utility.RegExFilter(@"Reason: [a-zA-Z]+", ex.Message);
+                if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
         }
-
-        
-
     }
 }

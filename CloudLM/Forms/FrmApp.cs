@@ -15,16 +15,42 @@ namespace CloudLM.Forms
         public FrmApp()
         {
             InitializeComponent();
+            InitializeAuthentication();
+        }
+        private async void InitializeAuthentication()
+        {
+            try
+            {
+                await Classes.FireActions.AuthFromSession();
+                if (Classes.FireObjects.AuthLink == null)
+                {
+                    FrmLogin frmLogin = new FrmLogin();
+                    frmLogin.ShowDialog();
+                    await Classes.FireActions.AuthFromEmailAndPassword(frmLogin.Email, frmLogin.Password);
+                }
+                if (Classes.FireObjects.AuthLink != null)
+                {
+                    await Classes.FireActions.Validate();
+                    FrmApp_LoadAuthInfo();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            Environment.Exit(0);
+        }
+        private async void FrmApp_LoadAuthInfo()
+        {
+            this.valMachineId.Text = await Classes.FireActions.MachineId();
+            this.valValidFrom.Text = await Classes.FireActions.ValidFrom();
+            this.valValidTill.Text = await Classes.FireActions.ValidTill();
         }
 
         private void FrmApp_Load(object sender, EventArgs e)
         {
-            FrmLogin frmLogin = new FrmLogin();
-            frmLogin.ShowDialog();
-            if(Classes.FireActions.User == null)
-            {
-                Environment.Exit(0);
-            }
+
         }
     }
 }

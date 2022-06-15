@@ -12,11 +12,12 @@ namespace CloudLM.Forms
 {
     public partial class FrmLogin : Form
     {
-        private string Email
+        private string _Email;
+        public string Email
         {
             get
             {
-                string _Email = this.tBoxEmail.Text; // Update value (only if control variable name changed)
+                if (_Email == null) return null;
                 if (String.IsNullOrEmpty(_Email))
                     throw new Exception("Email field empty");
                 if (!Classes.Utility.IsValidEmail(_Email))
@@ -24,11 +25,12 @@ namespace CloudLM.Forms
                 return _Email;
             }
         }
-        private string Password
+        private string _Password;
+        public string Password
         {
             get
             {
-                string _Password = this.tBoxPassword.Text; // Update value (only if control variable name changed)
+                if (_Password == null) return null;
                 if (String.IsNullOrEmpty(_Password))
                     throw new Exception("Password field empty");
 
@@ -42,15 +44,17 @@ namespace CloudLM.Forms
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
+            this._Email = null;
+            this._Password = null;
             this.Close();
         }
 
-        private async void btnLogin_Click(object sender, EventArgs e)
+        private void btnLogin_Click(object sender, EventArgs e)
         {
-
             try
             {
-                await Classes.FireActions.Authenticate(Email, Password);
+                this._Email = this.tBoxEmail.Text;
+                this._Password = this.tBoxPassword.Text;
                 this.Close();
             }
             catch (Exception exception)
