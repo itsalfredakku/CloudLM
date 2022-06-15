@@ -4,6 +4,7 @@
 ## Configuration
 
 Enable Firebase Authentication
+
 Enable Email/Password Sign-in method
 
 In project root directory 
