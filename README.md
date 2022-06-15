@@ -6,8 +6,7 @@
 ➤ Enable Firebase Authentication
 ➤ Enable Email/Password Sign-in method
 
-In project root directory 
-
+### Update credentials
 ```XML
 <appSettings>
   <add key="apiKey" value="firebase-api-key" />
@@ -15,6 +14,18 @@ In project root directory
 </appSettings>
 ```
 Update _**firebase-api-key**_ and _**realtime-database-path**_
+
+### Firebase Realtime Database Rule
+```Json
+{
+  "rules": {
+    "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+  }
+}
+```
 
 ## How to create user
  > ➤ Navigate to [Firebase Authentication](https://console.firebase.google.com/u/0/project/<project-id>/authentication/users)
