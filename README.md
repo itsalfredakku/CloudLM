@@ -35,7 +35,7 @@ Update _**firebase-api-key**_ and _**realtime-database-path**_
 
 🎉 Hurray you have created a first user 
 
-### Note
+## Note
 If user gets message **"Please contact administration"**
 1. Check user is enabled
 2. Check user validity (validFrom/validTill in **Realtime Database**)
