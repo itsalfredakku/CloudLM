@@ -72,7 +72,7 @@ namespace CloudLM.Classes
             return (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validTill")).ResultAs<string>();
         }
 
-        /*public static async Task UpdateProfile(string displayName, string photoUrl)
+        public static async Task UpdateProfile(string displayName, string photoUrl)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace CloudLM.Classes
                 if (String.IsNullOrWhiteSpace(error)) throw new Exception(ex.Message);
                 throw new Exception(error);
             }
-        }*/
+        }
         public static async Task Validate()
         {
             try
