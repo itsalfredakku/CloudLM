@@ -76,7 +76,7 @@ namespace CloudLM.Classes
         {
             try
             {
-                await authLink.UpdateProfileAsync(displayName, photoUrl);
+                await FireObjects.AuthLink.UpdateProfileAsync(displayName, photoUrl);
             }
             catch (Exception ex)
             {
