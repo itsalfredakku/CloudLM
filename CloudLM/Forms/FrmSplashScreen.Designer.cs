@@ -28,22 +28,23 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
-            // progressBar1
+            // progressBar
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 218);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(358, 23);
-            this.progressBar1.TabIndex = 0;
+            this.progressBar.Location = new System.Drawing.Point(12, 218);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(358, 23);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.TabIndex = 0;
             // 
             // FrmSplashScreen
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(382, 253);
-            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.progressBar);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "FrmSplashScreen";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -55,6 +56,6 @@
 
         #endregion
 
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.ProgressBar progressBar;
     }
 }
