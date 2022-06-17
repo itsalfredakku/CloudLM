@@ -13,7 +13,7 @@ namespace CloudLM
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Forms.FrmApp());
+            Application.Run(new Forms.FrmSplashScreen());
         }
     }
 }
