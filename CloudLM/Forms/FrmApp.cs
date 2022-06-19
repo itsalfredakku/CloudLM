@@ -19,8 +19,8 @@ namespace CloudLM.Forms
         private async Task FrmApp_LoadAuthInfo()
         {
             this.valMachineId.Text = await Classes.FireActions.MachineId();
-            this.valValidFrom.Text = await Classes.FireActions.ValidFrom();
-            this.valValidTill.Text = await Classes.FireActions.ValidTill();
+            this.valValidFrom.Text = ((DateTime)(await Classes.FireActions.ValidFrom())).ToString("dd-MM-yyyy");
+            this.valValidTill.Text = ((DateTime)(await Classes.FireActions.ValidTill())).ToString("dd-MM-yyyy");
         }
 
         private async void FrmApp_Load(object sender, EventArgs e)

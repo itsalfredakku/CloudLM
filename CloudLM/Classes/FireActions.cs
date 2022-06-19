@@ -63,13 +63,23 @@ namespace CloudLM.Classes
             }
             return machineId;
         }
-        internal async static Task<string> ValidFrom()
+        internal async static Task<DateTime?> ValidFrom()
         {
-            return (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validFrom")).ResultAs<string>();
+            try
+            {
+                string value = (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validFrom")).ResultAs<string>();
+                return DateTime.ParseExact(value, "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch { return null; }
         }
-        internal async static Task<string> ValidTill()
+        internal async static Task<DateTime?> ValidTill()
         {
-            return (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validTill")).ResultAs<string>();
+            try
+            {
+                string value = (await (new FireSharp.FirebaseClient(FireObjects.FiresharpConfig)).GetAsync($"{FireObjects.User.LocalId}/validTill")).ResultAs<string>();
+                return DateTime.ParseExact(value, "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch { return null; }
         }
 
         public static async Task UpdateProfile(string displayName, string photoUrl)
@@ -92,8 +102,8 @@ namespace CloudLM.Classes
                 try 
                 {
                     string hdsn = await MachineId();
-                    DateTime validFrom = DateTime.ParseExact(await ValidFrom(), "yyyyMMdd", null);
-                    DateTime validTill = DateTime.ParseExact(await ValidTill(), "yyyyMMdd", null);
+                    DateTime validFrom = (DateTime)(await ValidFrom());
+                    DateTime validTill = (DateTime)(await ValidTill());
 
 
 
@@ -108,8 +118,12 @@ namespace CloudLM.Classes
                 }
                 catch
                 {
-                    throw new Exception("Please contact administration");
+                    try { System.IO.File.Delete(".token"); } catch { }
+                    try { System.IO.File.Delete(".rtoken"); } catch { }
+                    throw new Exception("Please contact administrator");
                 }
+                try { System.IO.File.Delete(".token"); } catch { }
+                try { System.IO.File.Delete(".rtoken"); } catch { }
                 throw new Exception("Invalid machine");
             }
             catch (Exception ex)

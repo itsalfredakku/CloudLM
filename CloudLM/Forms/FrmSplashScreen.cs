@@ -26,8 +26,6 @@ namespace CloudLM.Forms
                 {
                     FrmLogin frmLogin = new FrmLogin();
                     frmLogin.ShowDialog();
-                    if (!String.IsNullOrWhiteSpace(frmLogin.Email) && !String.IsNullOrWhiteSpace(frmLogin.Password))
-                        await Classes.FireActions.AuthFromEmailAndPassword(frmLogin.Email, frmLogin.Password);
                 }
                 if (Classes.FireObjects.AuthLink != null)
                 {

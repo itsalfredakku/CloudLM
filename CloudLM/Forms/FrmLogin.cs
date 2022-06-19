@@ -49,18 +49,29 @@ namespace CloudLM.Forms
             this.Close();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
+            this.btnLogin.Enabled = false;
+            this.btnCancel.Enabled = false;
+            this.lnkLblForgotPass.Enabled = false;
             try
             {
                 this._Email = this.tBoxEmail.Text;
                 this._Password = this.tBoxPassword.Text;
-                this.Close();
+
+                if (!String.IsNullOrWhiteSpace(Email) && !String.IsNullOrWhiteSpace(Password))
+                {
+                    await Classes.FireActions.AuthFromEmailAndPassword(Email, Password);
+                    this.Close();
+                }
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message, "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            this.btnLogin.Enabled = true;
+            this.btnCancel.Enabled = true;
+            this.lnkLblForgotPass.Enabled = true;
         }
 
         private void lnkLblForgotPass_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
